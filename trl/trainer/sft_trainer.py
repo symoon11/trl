@@ -554,6 +554,7 @@ class SFTTrainer(Trainer):
         """
         Compute training loss and additionally compute token accuracies
         """
+        print(inputs)
         mode = "eval" if self.control.should_evaluate else "train"
         (loss, outputs) = super().compute_loss(
             model, inputs, return_outputs=True, num_items_in_batch=num_items_in_batch
