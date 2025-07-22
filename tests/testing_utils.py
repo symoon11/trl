@@ -15,7 +15,10 @@
 import random
 import unittest
 
+import torch
 from transformers import is_bitsandbytes_available, is_comet_available, is_sklearn_available, is_wandb_available
+from transformers.testing_utils import torch_device
+from transformers.utils import is_rich_available
 
 from trl import BaseBinaryJudge, BasePairwiseJudge
 from trl.import_utils import (
@@ -64,6 +67,13 @@ def require_mergekit(test_case):
     return unittest.skipUnless(is_mergekit_available(), "test requires mergekit")(test_case)
 
 
+def require_rich(test_case):
+    """
+    Decorator marking a test that requires rich. Skips the test if rich is not available.
+    """
+    return unittest.skipUnless(is_rich_available(), "test requires rich")(test_case)
+
+
 def require_sklearn(test_case):
     """
     Decorator marking a test that requires sklearn. Skips the test if sklearn is not available.
@@ -83,6 +93,16 @@ def require_no_wandb(test_case):
     Decorator marking a test that requires no wandb. Skips the test if wandb is available.
     """
     return unittest.skipUnless(not is_wandb_available(), "test requires no wandb")(test_case)
+
+
+def require_3_accelerators(test_case):
+    """
+    Decorator marking a test that requires at least 3 accelerators. Skips the test if 3 accelerators are not available.
+    """
+    torch_accelerator_module = getattr(torch, torch_device, torch.cuda)
+    return unittest.skipUnless(
+        torch_accelerator_module.device_count() > 3, f"test requires at least 3 {torch_device}s"
+    )(test_case)
 
 
 class RandomBinaryJudge(BaseBinaryJudge):
