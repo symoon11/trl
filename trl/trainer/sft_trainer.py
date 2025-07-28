@@ -773,6 +773,10 @@ class SFTTrainer(Trainer):
                                 tools=example.get("tools"),
                                 **example.get("chat_template_kwargs", {}),
                             )
+                            if example["rating"] == 0.0:
+                                processed["input_ids"] = processed["input_ids"][:-1]
+                                if "assistant_masks" in processed:
+                                    processed["assistant_masks"] = processed["assistant_masks"][:-1]
                             if "assistant_masks" in processed and 1 not in processed["assistant_masks"]:
                                 raise RuntimeError(
                                     "You're using `assistant_only_loss=True`, but at least one example has no "
@@ -820,7 +824,7 @@ class SFTTrainer(Trainer):
             # For Liger kernel, ensure only the essential columns
             if args.use_liger_kernel:
                 dataset = dataset.select_columns(
-                    {"input_ids", "seq_lengths", "completion_mask"}.intersection(dataset.column_names)
+                    {"input_ids", "seq_lengths", "completion_mask", "assistant_masks"}.intersection(dataset.column_names)
                 )
 
         return dataset
